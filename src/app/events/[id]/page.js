@@ -14,6 +14,7 @@ import {
 import RegisterButton from '../components/RegisterButton'
 import EventMap from '../components/EventMap'
 import ShareEvent from '../components/ShareEvent'
+import Link from 'next/link'
 
 // This would come from your database
 const eventData = {
@@ -216,11 +217,15 @@ export default function EventDetail() {
                 <span>{spotsLeft.toLocaleString()} spots left</span>
               </div>
 
-              <RegisterButton 
-                eventId={eventData.id}
-                isOpen={isRegistrationOpen}
-                spotsLeft={spotsLeft}
-              />
+              <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                <Link
+                  href={`/events/${eventData.id}/register`}
+                  scroll={false}
+                  className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-[#FF6B6B] hover:bg-[#ff5252] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF6B6B]"
+                >
+                  Register Now
+                </Link>
+              </div>
 
               <div className="mt-4 flex gap-2">
                 <button className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors">
