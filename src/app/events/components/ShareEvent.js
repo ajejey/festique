@@ -2,32 +2,29 @@
 
 import { Share2 } from 'lucide-react'
 
-export default function ShareEvent({ title, description }) {
+export default function ShareEvent({ title, url, children }) {
   const handleShare = async () => {
+    if (typeof window === 'undefined') return
+
     if (navigator.share) {
       try {
         await navigator.share({
           title,
-          text: description,
-          url: window.location.href
+          url
         })
       } catch (error) {
         console.log('Error sharing:', error)
       }
     } else {
       // Fallback: Copy to clipboard
-      navigator.clipboard.writeText(window.location.href)
+      navigator.clipboard.writeText(url)
       // TODO: Show toast notification
     }
   }
 
   return (
-    <button 
-      onClick={handleShare}
-      className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors"
-    >
-      <Share2 className="w-5 h-5" />
-      Share
-    </button>
+    <div onClick={handleShare}>
+      {children}
+    </div>
   )
 }
