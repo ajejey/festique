@@ -1,6 +1,29 @@
 import mongoose from 'mongoose'
 
+const customFieldResponseSchema = new mongoose.Schema({
+  fieldId: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  label: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  type: {
+    type: String,
+    enum: ['text', 'number', 'dropdown', 'checkbox', 'radio', 'date'],
+    required: false
+  },
+  value: {
+    type: mongoose.Schema.Types.Mixed,
+    required: false
+  }
+}, { _id: false })
+
 const registrationSchema = new mongoose.Schema({
+  // Event and User References
   event: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Event',
@@ -11,69 +34,150 @@ const registrationSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+
+  // Event Category and Ticket Details
   category: {
     type: String,
     required: true
   },
-  // Registration details
+  ticketTier: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Event.ticketTiers'
+  },
+
+  // Registration Details
   registrationDetails: {
+    // Basic Personal Information
     name: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
     email: {
       type: String,
-      required: true
+      required: true,
+      lowercase: true,
+      trim: true,
+      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
     },
     phone: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
+      validate: {
+        validator: function(v) {
+          return /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/.test(v)
+        },
+        message: 'Please enter a valid phone number'
+      }
     },
     dateOfBirth: {
       type: Date,
-      required: true
+      required: false,
+      validate: {
+        validator: function(v) {
+          // Ensure date of birth is reasonable
+          const age = new Date().getFullYear() - v.getFullYear()
+          return age >= 10 && age < 120
+        },
+        message: 'Invalid date of birth'
+      }
     },
     gender: {
       type: String,
-      enum: ['male', 'female', 'other'],
-      required: true
+      enum: ['male', 'female', 'other', 'prefer_not_to_say'],
+      required: false
     },
+
+    // Emergency Contact
     emergencyContact: {
       name: {
         type: String,
-        required: true
+        required: false,
+        trim: true
       },
       phone: {
         type: String,
-        required: true
+        required: false,
+        trim: true
       },
       relation: {
         type: String,
-        required: true
+        required: false,
+        trim: true
       }
     },
+
+    // Address Details
     address: {
-      street: String,
-      city: String,
-      state: String,
-      pincode: String,
-      country: String
+      street: {
+        type: String,
+        trim: true
+      },
+      city: {
+        type: String,
+        required: false,
+        trim: true
+      },
+      state: {
+        type: String,
+        trim: true
+      },
+      pincode: {
+        type: String,
+        trim: true
+      },
+      country: {
+        type: String,
+        required: false,
+        trim: true
+      }
     },
-    // Optional fields based on event type
-    additionalInfo: {
-      type: Map,
-      of: String
+
+    // Medical and Physical Information
+    medicalInfo: {
+      medicalConditions: [String],
+      allergies: [String],
+      medications: [String],
+      emergencyMedicalNotes: String
+    },
+
+    // Dynamic Registration Fields
+    customFields: [customFieldResponseSchema],
+
+    // Running/Sports Specific Information
+    athleteProfile: {
+      runningExperience: {
+        type: String,
+        enum: ['Beginner', 'Intermediate', 'Advanced', 'Professional']
+      },
+      previousRaces: [{
+        eventName: String,
+        distance: String,
+        completionTime: String,
+        year: Number
+      }],
+      personalBests: {
+        type: Map,
+        of: String
+      }
     }
   },
-  // Payment details
+
+  // Payment Details
   payment: {
     amount: {
       type: Number,
-      required: true
+      required: false,
+      min: 0
     },
     currency: {
       type: String,
       default: 'INR'
+    },
+    method: {
+      type: String,
+      enum: ['credit_card', 'debit_card', 'net_banking', 'upi', 'wallet']
     },
     razorpayOrderId: String,
     razorpayPaymentId: String,
@@ -94,109 +198,76 @@ const registrationSchema = new mongoose.Schema({
       reason: String
     }
   },
-  // Event participation details
+
+  // Event Participation Details
   participation: {
     status: {
       type: String,
-      enum: ['registered', 'checked_in', 'in_progress', 'completed', 'DNF', 'DNS'],
+      enum: [
+        'registered', 
+        'checked_in', 
+        'in_progress', 
+        'completed', 
+        'DNF',  // Did Not Finish
+        'DNS',  // Did Not Start
+        'disqualified'
+      ],
       default: 'registered'
     },
     startTime: Date,
     endTime: Date,
-    // Generic checkpoints that can be used for any event type
-    checkpoints: [{
-      name: String,
-      time: Date,
-      status: {
-        type: String,
-        enum: ['pending', 'completed', 'missed'],
-        default: 'pending'
-      },
-      notes: String
-    }],
-    // Optional running-specific details
-    running: {
-      bibNumber: String,
-      timing: {
-        netTime: Number,  // in seconds
-        gunTime: Number,  // in seconds
-        splits: [{
-          distance: Number,
-          time: Number
-        }]
-      },
-      category: {
-        ageGroup: String,
-        competitionType: String  // elite, amateur, etc.
-      }
-    }
-  },
-  // Kit/Package collection
-  collection: {
-    required: {
-      type: Boolean,
-      default: false
+    completionTime: String,
+    chipTime: String,  // Timing from RFID/Chip
+    position: {
+      overall: Number,
+      category: Number
     },
-    items: [{
-      name: String,
-      collected: {
-        type: Boolean,
-        default: false
-      }
-    }],
-    status: {
-      type: String,
-      enum: ['not_collected', 'partially_collected', 'collected'],
-      default: 'not_collected'
-    },
-    collectedAt: Date,
-    collectedBy: String,
-    notes: String
+    splits: [{
+      distance: String,
+      time: String
+    }]
   },
-  // Registration status
-  status: {
+
+  // Tracking and Audit
+  bib: {
     type: String,
-    enum: ['pending', 'confirmed', 'cancelled'],
-    default: 'pending'
+    unique: true,
+    sparse: true
   },
-  cancellation: {
-    date: Date,
-    reason: String,
-    requestedBy: {
-      type: String,
-      enum: ['participant', 'organizer', 'admin']
-    },
-    notes: String
+  qrCode: String,
+  trackingLink: String,
+
+  // Additional Metadata
+  source: {
+    type: String,
+    enum: ['web', 'mobile', 'admin'],
+    default: 'web'
   },
-  // Feedback and rating
-  feedback: {
-    rating: {
-      type: Number,
-      min: 1,
-      max: 5
-    },
-    review: String,
-    submittedAt: Date
+  referralCode: String,
+  promoCode: String,
+
+  // Timestamps
+  createdAt: {
+    type: Date,
+    default: Date.now
   },
-  // Certificate
-  certificate: {
-    issued: {
-      type: Boolean,
-      default: false
-    },
-    url: String,
-    issuedAt: Date
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  indexes: [
+    { event: 1, user: 1 },
+    { 'registrationDetails.email': 1 },
+    { 'participation.status': 1 }
+  ]
 })
 
-// Add indexes
-registrationSchema.index({ event: 1, user: 1 })
-registrationSchema.index({ 'participation.status': 1 })
-registrationSchema.index({ 'payment.status': 1 })
-registrationSchema.index({ status: 1 })
-registrationSchema.index({ 'registrationDetails.email': 1 })
-registrationSchema.index({ 'participation.running.bibNumber': 1 })
+// Middleware to update timestamps
+registrationSchema.pre('save', function(next) {
+  this.updatedAt = Date.now()
+  next()
+})
 
-export const Registration = mongoose.models.Registration || mongoose.model('Registration', registrationSchema)
+export default mongoose.models.Registration || mongoose.model('Registration', registrationSchema)

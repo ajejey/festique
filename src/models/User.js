@@ -15,8 +15,38 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['participant', 'organizer', 'admin'],
+    enum: ['participant', 'admin', 'organizer'],
     default: 'participant'
+  },
+  canCreateEvents: {
+    type: Boolean,
+    default: false
+  },
+  organizerProfile: {
+    type: {
+      organizationName: {
+        type: String,
+        trim: true
+      },
+      contactPhone: {
+        type: String,
+        trim: true
+      },
+      verificationStatus: {
+        type: String,
+        enum: ['not_requested', 'pending', 'verified', 'rejected'],
+        default: 'not_requested'
+      },
+      verificationDocuments: [{
+        type: String,
+        trim: true
+      }],
+      eventCreationEligibility: {
+        type: Date,
+        default: null
+      }
+    },
+    default: {}
   },
   phone: {
     type: String,
@@ -28,6 +58,11 @@ const userSchema = new mongoose.Schema({
   gender: {
     type: String,
     enum: ['male', 'female', 'other']
+  },
+  bloodGroup: {
+    type: String,
+    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+    trim: true
   },
   address: {
     street: String,

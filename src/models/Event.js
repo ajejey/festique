@@ -1,284 +1,405 @@
 import mongoose from 'mongoose'
 
-const eventSchema = new mongoose.Schema({
-  title: {
+const dynamicFieldSchema = new mongoose.Schema({
+  id: {
     type: String,
     required: true,
     trim: true
   },
-  slug: {
+  label: {
     type: String,
     required: true,
-    unique: true
+    trim: true
+  },
+  type: {
+    type: String,
+    required: true,
+    enum: ['text', 'number', 'dropdown', 'checkbox', 'radio', 'date']
+  },
+  required: {
+    type: Boolean,
+    default: false
+  },
+  options: [{
+    type: String,
+    trim: true
+  }],
+  validationRules: {
+    minLength: Number,
+    maxLength: Number,
+    pattern: String
+  }
+}, { _id: false })
+
+const categorySchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  distance: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  startTime: Date,
+  ageGroup: {
+    min: Number,
+    max: Number
+  },
+  gender: {
+    type: String,
+    enum: ['All', 'Male', 'Female', 'Other'],
+    default: 'All'
   },
   description: {
     type: String,
-    required: true
+    trim: true
   },
-  eventType: {
+  basePrice: {
+    type: Number,
+    required: true,
+    min: 0
+  }
+})
+
+const ticketTierSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    trim: true,
+    default: null
+  },
+  discountPercentage: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100
+  },
+  startDate: {
+    type: Date,
+    default: null
+  },
+  endDate: {
+    type: Date,
+    default: null
+  },
+  isEarlyBird: {
+    type: Boolean,
+    default: false
+  }
+}, { 
+  strict: 'throw',  
+  timestamps: true  
+})
+
+const eventSchema = new mongoose.Schema({
+  // Basic Event Details
+  name: {
     type: String,
     required: true,
-    enum: ['marathon', 'run', 'concert', 'conference', 'workshop', 'other']
+    trim: true
   },
   organizer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  // Timing
-  schedule: {
-    startDate: {
-      type: Date,
-      required: true
-    },
-    endDate: Date,
-    registrationStart: {
-      type: Date,
-      required: true
-    },
-    registrationEnd: {
-      type: Date,
-      required: true
-    },
-    // Detailed schedule
-    timeline: [{
-      time: Date,
-      title: String,
-      description: String
-    }]
+  eventType: {
+    type: String,
+    enum: ['Marathon', 'Trail Run', 'Fun Run', 'Ultra Marathon', 'Running', 'Cycling', 'Triathlon', 'Swimming', 'Trail Running', 'Mountain Biking'],
+    required: true
   },
-  // Location
-  venue: {
-    name: String,
+  description: {
+    type: String,
+    required: true
+  },
+  
+  // Timing and Location
+  startDate: {
+    type: Date,
+    required: true
+  },
+  endDate: {
+    type: Date
+  },
+  location: {
+    venue: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    city: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    state: {
+      type: String,
+      trim: true
+    },
+    country: {
+      type: String,
+      required: true,
+      trim: true
+    },
     address: {
-      street: String,
-      city: String,
-      state: String,
-      country: String,
-      pincode: String
+      type: String,
+      required: true,
+      trim: true
     },
     coordinates: {
-      lat: Number,
-      lng: Number
+      lat: {
+        type: Number,
+        required: false
+      },
+      lng: {
+        type: Number,
+        required: false
+      }
     },
-    // For virtual/hybrid events
-    online: {
-      isVirtual: {
+    googleMapsLink: {
+      type: String,
+      trim: true,
+      validate: {
+        validator: function(v) {
+          // Optional validation for Google Maps URL
+          if (!v) return true;
+          const googleMapsRegex = /^(https?:\/\/)?(www\.)?google\.com\/maps\/.*$/;
+          return googleMapsRegex.test(v);
+        },
+        message: 'Please provide a valid Google Maps URL'
+      }
+    }
+  },
+
+  // Registration Details
+  registrationOpenDate: {
+    type: Date,
+    required: true,
+    validate: {
+      validator: function(v) {
+        return v <= this.endDate
+      },
+      message: 'Registration open date must be before or equal to the event end date'
+    }
+  },
+  registrationCloseDate: {
+    type: Date,
+    required: true,
+    validate: {
+      validator: function(v) {
+        return v >= this.registrationOpenDate && v <= this.endDate
+      },
+      message: 'Registration close date must be between registration open date and event end date'
+    }
+  },
+
+  // Capacity and Ticket Tiers
+  capacity: {
+    total: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    registered: {
+      type: Number,
+      default: 0,
+      min: 0
+    }
+  },
+  categories: [categorySchema],
+  ticketTiers: [ticketTierSchema],
+
+  // Event Media
+  coverImage: {
+    type: String,
+    trim: true
+  },
+  additionalImages: [{
+    type: String,
+    trim: true
+  }],
+
+  // Event Details
+  courseMap: {
+    type: String,
+    trim: true
+  },
+  schedule: [{
+    time: Date,
+    activity: {
+      type: String,
+      trim: true
+    }
+  }],
+  amenities: [{
+    type: String,
+    trim: true
+  }],
+  rules: [{
+    type: String,
+    trim: true
+  }],
+
+  // Organizer Details
+  organizerDetails: {
+    name: {
+      type: String,
+      trim: true
+    },
+    logo: {
+      type: String,
+      trim: true
+    },
+    description: {
+      type: String,
+      trim: true
+    },
+    contact: {
+      email: {
+        type: String,
+        trim: true,
+        lowercase: true
+      },
+      phone: {
+        type: String,
+        trim: true
+      }
+    }
+  },
+
+  // Additional Event Metadata
+  difficulty: {
+    type: String,
+    enum: ['Beginner', 'Intermediate', 'Advanced', 'Professional'],
+    default: 'Intermediate'
+  },
+  trainingResources: [{
+    type: String,
+    trim: true
+  }],
+  eventSpecificConfig: {
+    terrainType: {
+      type: String,
+      trim: true,
+    },
+    elevationProfile: {
+      type: String,
+      trim: true
+    },
+    ageRestrictions: {
+      minimumAge: {
+        type: Number,
+        min: 0,
+        max: 120
+      },
+      maximumAge: {
+        type: Number,
+        min: 0,
+        max: 120
+      }
+    },
+    medicalCertificateRequired: {
+      type: Boolean,
+      default: false
+    }
+  },
+
+  // T-shirt Options
+  tshirtOptions: {
+    includedTshirt: {
+      provided: {
         type: Boolean,
         default: false
       },
-      platform: String,
-      joinUrl: String
-    }
-  },
-  // Ticket categories
-  categories: [{
-    name: {
-      type: String,
-      required: true
-    },
-    description: String,
-    price: {
-      amount: {
-        type: Number,
-        required: true
-      },
-      currency: {
+      sizes: [{
         type: String,
-        default: 'INR'
-      }
-    },
-    capacity: {
-      total: {
-        type: Number,
-        required: true
-      },
-      available: {
-        type: Number,
-        required: true
-      },
-      reserved: {
-        type: Number,
-        default: 0
-      }
-    },
-    benefits: [String],
-    validTill: Date,
-    restrictions: {
-      minAge: Number,
-      maxAge: Number,
-      gender: String
-    }
-  }],
-  // Media
-  media: {
-    cover: {
-      url: String,
-      alt: String
-    },
-    gallery: [{
-      url: String,
-      alt: String,
-      type: {
-        type: String,
-        enum: ['image', 'video']
-      }
-    }],
-    brochure: String
-  },
-  // Features and amenities
-  features: {
-    general: [{
-      name: String,
-      description: String,
-      icon: String
-    }],
-    // Optional running-specific features
-    running: {
-      distance: {
-        type: String,
-        enum: ['5k', '10k', 'half', 'full', 'ultra', 'other']
-      },
-      terrain: {
-        type: String,
-        enum: ['road', 'trail', 'track', 'mixed']
-      },
-      elevation: {
-        gain: Number,
-        loss: Number
-      },
-      services: {
-        chipTiming: Boolean,
-        pacers: Boolean,
-        waterStations: Number,
-        medicalSupport: Boolean,
-        finisherMedal: Boolean,
-        tShirt: Boolean,
-        photography: Boolean
-      },
-      courseMap: {
-        image: String,
-        gpxFile: String,
-        checkpoints: [{
-          name: String,
-          distance: Number,
-          coordinates: {
-            lat: Number,
-            lng: Number
+        enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
+      }],
+      designUrl: {
+        type: [String],
+        trim: true,
+        validate: {
+          validator: function(v) {
+            return v.length <= 5;
           },
-          services: [String]
-        }]
+          message: 'Maximum of 5 design images allowed'
+        }
+      },
+      material: {
+        type: String,
       }
-    }
-  },
-  // Content
-  content: {
-    about: String,
-    rules: [String],
-    faqs: [{
-      question: String,
-      answer: String
-    }],
-    termsAndConditions: String,
-    cancellationPolicy: String
-  },
-  // Contact information
-  contact: {
-    email: String,
-    phone: String,
-    website: String,
-    socialMedia: {
-      facebook: String,
-      instagram: String,
-      twitter: String
-    }
-  },
-  // Stats and analytics
-  stats: {
-    views: {
-      type: Number,
-      default: 0
     },
-    registrations: {
-      type: Number,
-      default: 0
-    },
-    revenue: {
-      type: Number,
-      default: 0
-    },
-    ratings: {
-      average: {
+    additionalTshirts: [{
+      name: {
+        type: String,
+        trim: true,
+        required: false
+      },
+      price: {
         type: Number,
+        min: 0,
+        required: false
+      },
+      sizes: [{
+        type: String,
+        enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
+      }],
+      designUrl: {
+        type: [String],
+        trim: true,
+        validate: {
+          validator: function(v) {
+            return v.length <= 5;
+          },
+          message: 'Maximum of 5 design images allowed'
+        }
+      },
+      material: {
+        type: String,
+        enum: ['Cotton', 'Polyester', 'Blend', 'Moisture-Wicking']
+      },
+      quantity: {
+        type: Number,
+        min: 0,
         default: 0
       },
-      count: {
-        type: Number,
-        default: 0
+      availableTill: {
+        type: Date
       }
-    }
+    }]
   },
-  // Status and visibility
+
+  // Dynamic Registration Fields
+  dynamicRegistrationFields: [dynamicFieldSchema],
+
+  // Tracking and Analytics
+  views: {
+    type: Number,
+    default: 0
+  },
+  shares: {
+    type: Number,
+    default: 0
+  },
+
+  // Status and Visibility
   status: {
     type: String,
-    enum: ['draft', 'published', 'cancelled', 'completed', 'postponed'],
-    default: 'draft'
+    enum: ['Draft', 'Published', 'Cancelled', 'Completed'],
+    default: 'Draft'
   },
-  visibility: {
-    type: String,
-    enum: ['public', 'private', 'unlisted'],
-    default: 'public'
-  },
-  // SEO
-  seo: {
-    metaTitle: String,
-    metaDescription: String,
-    keywords: [String],
-    ogImage: String
-  },
-  // Additional settings
-  settings: {
-    requireApproval: {
-      type: Boolean,
-      default: false
-    },
-    allowTeams: {
-      type: Boolean,
-      default: false
-    },
-    maxTeamSize: Number,
-    allowWaitlist: {
-      type: Boolean,
-      default: false
-    },
-    waitlistLimit: Number,
-    allowTransfers: {
-      type: Boolean,
-      default: false
-    },
-    transferDeadline: Date,
-    customFields: [{
-      name: String,
-      type: {
-        type: String,
-        enum: ['text', 'number', 'date', 'select', 'checkbox']
-      },
-      required: Boolean,
-      options: [String], // For select type
-      validation: String // Regex pattern for validation
-    }]
+  isPublic: {
+    type: Boolean,
+    default: true
   }
 }, {
-  timestamps: true
+  timestamps: true  // Adds createdAt and updatedAt fields
 })
 
-// Add indexes
-eventSchema.index({ slug: 1 })
-eventSchema.index({ 'schedule.startDate': 1 })
-eventSchema.index({ 'venue.address.city': 1 })
-eventSchema.index({ eventType: 1 })
-eventSchema.index({ status: 1 })
-eventSchema.index({ visibility: 1 })
-eventSchema.index({ 'features.running.distance': 1 })
+// Indexes for performance
+eventSchema.index({ startDate: 1, registrationCloseDate: 1 })
+eventSchema.index({ organizer: 1, status: 1 })
+eventSchema.index({ eventType: 1, location: 1 })
 
-export const Event = mongoose.models.Event || mongoose.model('Event', eventSchema)
+export default mongoose.models.Event || mongoose.model('Event', eventSchema)

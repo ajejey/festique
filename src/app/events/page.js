@@ -1,163 +1,134 @@
-import { Search, MapPin, Calendar, Trophy } from 'lucide-react'
-import EventCard from './components/EventCard'
-import SearchFilters from './components/SearchFilters'
+'use server'
 
-// This would come from your database
-const sampleEvents = [
-  {
-    id: 1,
-    title: "Mumbai Marathon 2024",
-    date: "2024-02-15",
-    location: "Mumbai, India",
-    distance: "42.2km",
-    price: "₹2000",
-    registrationEndDate: "2024-02-01",
-    image: "https://images.pexels.com/photos/1555354/pexels-photo-1555354.jpeg",
-    organizer: "Mumbai Road Runners",
-    participantCount: 5000,
-  },
-  {
-    id: 2,
-    title: "Hyderabad Marathon 2024",
-    date: "2024-08-15",
-    location: "Hyderabad, India",
-    distance: "21.1km",
-    price: "₹1000",
-    registrationEndDate: "2024-08-01",
-    image: "https://images.pexels.com/photos/2526878/pexels-photo-2526878.jpeg",
-    organizer: "Hyderabad Runners Club",
-    participantCount: 2000,
-  },
-  {
-    id: 3,
-    title: "Bangalore Marathon 2024",
-    date: "2024-12-15",
-    location: "Bangalore, India",
-    distance: "10km",
-    price: "₹500",
-    registrationEndDate: "2024-12-01",
-    image: "https://images.pexels.com/photos/2402777/pexels-photo-2402777.jpeg",
-    organizer: "Bangalore Runners Community",
-    participantCount: 1000,
-  },
-  {
-    id: 4,
-    title: "Pune Marathon 2024",
-    date: "2024-03-15",
-    location: "Pune, India",
-    distance: "42.2km",
-    price: "₹1500",
-    registrationEndDate: "2024-03-01",
-    image: "https://images.pexels.com/photos/3621183/pexels-photo-3621183.jpeg",
-    organizer: "Pune Runners Association",
-    participantCount: 8000,
-  },
-  {
-    id: 5,
-    title: "Delhi Marathon 2024",
-    date: "2024-04-15",
-    location: "New Delhi, India",
-    distance: "42.2km",
-    price: "₹3000",
-    registrationEndDate: "2024-04-01",
-    image: "https://images.pexels.com/photos/2524874/pexels-photo-2524874.jpeg",
-    organizer: "Delhi Runners Group",
-    participantCount: 12000,
-  },
-  {
-    id: 6,
-    title: "Chennai Marathon 2024",
-    date: "2024-05-15",
-    location: "Chennai, India",
-    distance: "42.2km",
-    price: "₹1000",
-    registrationEndDate: "2024-05-01",
-    image: "https://images.pexels.com/photos/2524874/pexels-photo-2524874.jpeg",
-    organizer: "Chennai Runners Association",
-    participantCount: 8000,
-  },
-  {
-    id: 7,
-    title: "Kolkata Marathon 2024",
-    date: "2024-06-15",
-    location: "Kolkata, India",
-    distance: "42.2km",
-    price: "₹2000",
-    registrationEndDate: "2024-06-01",
-    image: "https://images.pexels.com/photos/2526878/pexels-photo-2526878.jpeg",
-    organizer: "Kolkata Runners Community",
-    participantCount: 10000,
-  },
-  {
-    id: 8,
-    title: "Ahmedabad Marathon 2024",
-    date: "2024-07-15",
-    location: "Ahmedabad, India",
-    distance: "42.2km",
-    price: "₹3000",
-    registrationEndDate: "2024-07-01",
-    image: "https://images.pexels.com/photos/2402777/pexels-photo-2402777.jpeg",
-    organizer: "Ahmedabad Runners Association",
-    participantCount: 15000,
-  },
-]
+import { Suspense } from 'react'
+import { getEvents, getEventTypes, getEventCities } from './actions'
+import EventCard from './components/EventCard'
+import { Filter, Search } from 'lucide-react'
 
 export default async function EventsPage() {
+  const events = await getEvents()
+  const eventTypes = await getEventTypes()
+  const eventCities = await getEventCities()
+
   return (
-    <main className="min-h-screen pt-16">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-[#FF6B6B]/10 via-[#4ECDC4]/10 to-[#45B7D1]/10 py-24">
-        <div className="container mx-auto px-4">
-          <h1 className="font-playfair text-4xl md:text-5xl font-bold text-center mb-8">
-            Discover Your Next Race
-          </h1>
-          <p className="text-neutral-600 text-center mb-12 max-w-2xl mx-auto">
-            Find and register for marathons across the country. From 5K fun runs to full marathons, 
-            we&apos;ve got the perfect race for every runner.
-          </p>
-          
-          {/* Search Bar */}
-          <div className="max-w-4xl mx-auto">
-            <SearchFilters />
+    <div className="container mx-auto px-4 py-20 space-y-8">
+      {/* Page Header */}
+      <div className="text-center space-y-4">
+        <h1 className="text-3xl font-playfair font-bold text-neutral-900">
+          Upcoming Events
+        </h1>
+        <p className="text-neutral-600 font-montserrat max-w-xl mx-auto">
+          Explore a variety of exciting running and cycling events across different locations and difficulty levels.
+        </p>
+      </div>
+
+      {/* Filters and Search */}
+      <div className="bg-neutral-50 rounded-2xl p-6 shadow-sm">
+        <div className="grid md:grid-cols-3 gap-4">
+          {/* Event Type Filter */}
+          <div>
+            <label 
+              htmlFor="eventType" 
+              className="block text-sm font-montserrat font-medium text-neutral-700 mb-2"
+            >
+              Event Type
+            </label>
+            <select 
+              id="eventType" 
+              className="
+                w-full px-4 py-3 rounded-lg border border-neutral-300
+                focus:border-primary focus:ring-primary focus:outline-none
+                font-montserrat text-neutral-900
+              "
+            >
+              <option value="">All Types</option>
+              {eventTypes.map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* City Filter */}
+          <div>
+            <label 
+              htmlFor="city" 
+              className="block text-sm font-montserrat font-medium text-neutral-700 mb-2"
+            >
+              City
+            </label>
+            <select 
+              id="city" 
+              className="
+                w-full px-4 py-3 rounded-lg border border-neutral-300
+                focus:border-primary focus:ring-primary focus:outline-none
+                font-montserrat text-neutral-900
+              "
+            >
+              <option value="">All Cities</option>
+              {eventCities.map(city => (
+                <option key={city} value={city}>{city}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Date Range */}
+          <div>
+            <label 
+              htmlFor="dateRange" 
+              className="block text-sm font-montserrat font-medium text-neutral-700 mb-2"
+            >
+              Date Range
+            </label>
+            <input 
+              type="date" 
+              id="dateRange" 
+              className="
+                w-full px-4 py-3 rounded-lg border border-neutral-300
+                focus:border-primary focus:ring-primary focus:outline-none
+                font-montserrat text-neutral-900
+              "
+            />
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Events Grid */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-            <div className="bg-white p-4 rounded-2xl text-center">
-              <Calendar className="w-6 h-6 mx-auto mb-2 text-[#FF6B6B]" />
-              <div className="font-bold text-2xl">50+</div>
-              <div className="text-sm text-neutral-600">Upcoming Events</div>
-            </div>
-            <div className="bg-white p-4 rounded-2xl text-center">
-              <MapPin className="w-6 h-6 mx-auto mb-2 text-[#4ECDC4]" />
-              <div className="font-bold text-2xl">20+</div>
-              <div className="text-sm text-neutral-600">Cities</div>
-            </div>
-            <div className="bg-white p-4 rounded-2xl text-center">
-              <Trophy className="w-6 h-6 mx-auto mb-2 text-[#45B7D1]" />
-              <div className="font-bold text-2xl">100K+</div>
-              <div className="text-sm text-neutral-600">Runners</div>
-            </div>
-            <div className="bg-white p-4 rounded-2xl text-center">
-              <Search className="w-6 h-6 mx-auto mb-2 text-[#FF6B6B]" />
-              <div className="font-bold text-2xl">5K+</div>
-              <div className="text-sm text-neutral-600">Monthly Searches</div>
-            </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {events.length === 0 ? (
+          <div className="col-span-full text-center text-neutral-600 font-montserrat">
+            No events found. Check back later or adjust your filters.
           </div>
+        ) : (
+          events.map(event => (
+            <EventCard key={event._id} event={event} />
+          ))
+        )}
+      </div>
 
-          {/* Events Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sampleEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </div>
-        </div>
-      </section>
-    </main>
+      {/* Pagination (Optional) */}
+      <div className="flex justify-center mt-8">
+        <nav aria-label="Pagination" className="inline-flex space-x-2">
+          <button 
+            disabled 
+            className="
+              px-4 py-2 rounded-full 
+              bg-neutral-200 text-neutral-600 
+              cursor-not-allowed
+            "
+          >
+            Previous
+          </button>
+          <button 
+            className="
+              px-4 py-2 rounded-full 
+              bg-primary text-white 
+              hover:bg-primary/90
+            "
+          >
+            Next
+          </button>
+        </nav>
+      </div>
+    </div>
   )
 }

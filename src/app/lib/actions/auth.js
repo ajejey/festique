@@ -96,6 +96,11 @@ export async function verifyOTP(email, otp) {
       name: email.split('@')[0], // Temporary name from email
       role: 'participant',
       emailVerified: true,
+      canCreateEvents: false, // Default to false for new users
+      profile: {
+        firstName: email.split('@')[0],
+        lastName: ''
+      },
       settings: {
         language: 'en',
         notifications: {
@@ -106,6 +111,10 @@ export async function verifyOTP(email, otp) {
           showProfile: true,
           showStats: true
         }
+      },
+      preferences: {
+        eventTypes: [],
+        sportInterests: []
       }
     })
   }
@@ -116,6 +125,7 @@ export async function verifyOTP(email, otp) {
       userId: user._id,
       email: user.email,
       role: user.role,
+      canCreateEvents: user.canCreateEvents,
       isNewUser
     },
     process.env.JWT_SECRET,

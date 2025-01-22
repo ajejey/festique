@@ -15,9 +15,12 @@ export default function Header() {
       <nav className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-playfair font-bold text-neutral-900">
+          <Link href="/" className="flex items-baseline gap-1">
+            <span className="text-3xl sm:text-4xl md:text-5xl font-racing text-[#FF6B6B]">
               Festique
+            </span>
+            <span className="text-xl sm:text-2xl md:text-2xl font-racing text-[#FF6B6B]">
+              .live
             </span>
           </Link>
 
