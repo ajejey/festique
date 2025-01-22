@@ -24,6 +24,14 @@ export const metadata = {
   description: 'Discover and register for running events. One platform, endless possibilities.',
 }
 
+export const viewport = {
+  themeColor: '#FF6B6B', // Use your primary brand color
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false
+}
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${montserrat.variable} ${playfair.variable} ${racing.variable}`}>
