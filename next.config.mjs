@@ -25,7 +25,13 @@ const nextConfig = {
         hostname: 'v.pexels.com',
         port: '',
         pathname: '/**',
-      }
+      },
+      {
+        protocol: "https",
+        hostname: "ik.imagekit.io",
+        port: "",
+        pathname: '/**',
+      },
     ],
   },
 };

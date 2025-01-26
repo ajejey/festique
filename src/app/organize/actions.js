@@ -6,6 +6,8 @@ import mongoose from 'mongoose'
 import Event from '@/models/Event'
 import Registration from '@/models/Registration'
 import User from '@/models/User'
+import ImageKit from "imagekit";
+import { readFile } from 'fs/promises';
 
 export async function createEvent(formData) {
   const user = await requireEventCreation()
@@ -51,19 +53,8 @@ export async function createEvent(formData) {
       }
     })
 
-    // File upload handling (placeholder - implement actual file upload)
-    const coverImage = formData.coverImage 
-      ? (await uploadFile(formData.coverImage, 'event-covers')).url 
-      : null
-
-    const additionalImages = formData.additionalImages 
-      ? await Promise.all(
-          formData.additionalImages.map(async (image) => 
-            (await uploadFile(image, 'event-images')).url
-          )
-        )
-      : []
-
+    // File upload handling is now done in the EventMediaUpload component
+    // Just use the URLs directly from formData
     const newEvent = await Event.create({
       name: formData.name,
       eventType: formData.eventType,
@@ -113,14 +104,14 @@ export async function createEvent(formData) {
         endDate: tier.endDate ? new Date(tier.endDate) : null,
         isEarlyBird: !!tier.isEarlyBird
       })),
-      coverImage: coverImage,
-      additionalImages: additionalImages,
+      coverImage: formData.coverImage,
+      additionalImages: formData.additionalImages,
       status: 'Draft',
       dynamicRegistrationFields: validatedDynamicFields,
       rules: formData.rules
         ? formData.rules
-          .filter(rule => rule.trim() !== '') // Remove empty rules
-          .map(rule => rule.trim()) // Trim whitespace
+          .filter(rule => rule.trim() !== '')
+          .map(rule => rule.trim())
         : [],
       amenities: formData.amenities
         ? formData.amenities
@@ -128,7 +119,7 @@ export async function createEvent(formData) {
           .map(amenity => amenity.trim())
         : [],
       capacity: {
-        total: 0, // Default to 0 if no specific capacity is set
+        total: 10000,
         registered: 0
       },
       schedule: formData.schedule
@@ -187,12 +178,69 @@ export async function createEvent(formData) {
   }
 }
 
-// Placeholder function for file upload
+// ImageKit Authentication Server Action
+export async function imagekitAuth() {
+  const imagekit = new ImageKit({
+    publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY,
+    privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+    urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT
+  });
+
+  const authenticationParameters = imagekit.getAuthenticationParameters();
+  
+  return {
+    signature: authenticationParameters.signature,
+    expire: authenticationParameters.expire,
+    token: authenticationParameters.token
+  };
+}
+
+// Update existing uploadFile function
 export async function uploadFile(file, folder) {
-  // TODO: Implement actual file upload logic
-  // This could use services like AWS S3, Cloudinary, etc.
-  console.log(`Uploading file to ${folder}:`, file.name)
-  return { url: `/uploads/${folder}/${file.name}` }
+  console.log("uploadFile function called with file and folder", file, folder);
+
+  try {
+    // Initialize ImageKit
+    const imagekit = new ImageKit({
+      publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY,
+      privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+      urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT
+    });
+
+    // Convert File to Buffer
+    let buffer;
+    if (file instanceof File) {
+      // For browser File objects in server actions
+      buffer = Buffer.from(await file.arrayBuffer());
+    } else if (typeof file === 'string') {
+      // For file paths
+      buffer = await readFile(file);
+    } else {
+      throw new Error('Unsupported file type');
+    }
+
+    // Generate a unique filename
+    const fileName = `${folder}_${Date.now()}_${file.name || 'file'}`;
+
+    // Upload to ImageKit using buffer
+    const uploadResponse = await imagekit.upload({
+      file: buffer,
+      fileName: fileName,
+      folder: `/festique/${folder}`,
+      useUniqueFileName: true,
+      tags: ['festique-event']
+    });
+
+    console.log("ImageKit Upload Response:", uploadResponse);
+
+    return {
+      url: uploadResponse.url,
+      fileId: uploadResponse.fileId
+    };
+  } catch (error) {
+    console.error("ImageKit Upload Error:", error);
+    throw new Error(`File upload failed: ${error.message}`);
+  }
 }
 
 export async function updateEventStatus(eventId, status) {

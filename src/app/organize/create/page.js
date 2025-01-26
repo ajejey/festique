@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronRight, ChevronLeft } from 'lucide-react'
 import EventBasicInfoForm from './components/EventBasicInfoForm'
-import EventDetailsForm from './components/EventDetailsForm'
+import EventDetailsReactHookForm from './components/EventDetailsReactHookForm'
 import EventTicketingForm from './components/EventTicketingForm'
 import EventMediaUpload from './components/EventMediaUpload'
 import DynamicRegistrationFields from './components/DynamicRegistrationFields'
@@ -53,7 +53,7 @@ export default function CreateEventPage() {
       title: 'Basic Event Information'
     },
     {
-      component: EventDetailsForm,
+      component: EventDetailsReactHookForm,
       title: 'Event Details'
     },
     {
@@ -84,12 +84,13 @@ export default function CreateEventPage() {
   }
 
   const handleSubmit = async () => {
+    console.log('Form Data before submit:', formData);
     const completeEventData = {
       ...formData,
-      coverImage: formData.coverImage?.file || null,
-      additionalImages: formData.additionalImages.map(img => img.file),
-      status: 'Draft', // Explicitly set status
+      status: 'Draft',
       dynamicRegistrationFields: dynamicFields,
+      coverImage: formData.coverImage || null,
+      additionalImages: formData.additionalImages || [],
       ticketTiers: formData.ticketTiers.map(tier => ({
         name: tier.name || '',
         discountPercentage: tier.discountPercentage || 0,
@@ -98,18 +99,15 @@ export default function CreateEventPage() {
         isEarlyBird: tier.isEarlyBird || false
       }))
     }
+    console.log('Complete Event Data:', completeEventData);
 
     try {
       const result = await createEvent(completeEventData)
       
       if (result.success) {
-        // Store the event ID in localStorage for the next step
         localStorage.setItem('currentEventId', result.eventId)
-        
-        // Navigate to the registration setup page
         router.push('/organize/create/registration?eventId=' + result.eventId)
       } else {
-        // Handle error
         console.error(result.message)
       }
     } catch (error) {
@@ -152,25 +150,45 @@ export default function CreateEventPage() {
         ) : (
           <EventMediaUpload
             initialData={formData}
-            onNext={(mediaData) => {
+            onNext={async (mediaData) => {
+              // First update the form data
               setFormData(prev => ({
                 ...prev,
-                ...mediaData,
-                dynamicRegistrationFields: dynamicFields
-              }))
-              handleSubmit()
+                coverImage: mediaData.coverImage,
+                additionalImages: mediaData.additionalImages
+              }));
+              
+              // Then create the event with complete data
+              const completeEventData = {
+                ...formData,
+                coverImage: mediaData.coverImage,
+                additionalImages: mediaData.additionalImages,
+                status: 'Draft',
+                dynamicRegistrationFields: dynamicFields,
+                ticketTiers: formData.ticketTiers?.map(tier => ({
+                  name: tier.name || '',
+                  discountPercentage: tier.discountPercentage || 0,
+                  startDate: tier.startDate || null,
+                  endDate: tier.endDate || null,
+                  isEarlyBird: tier.isEarlyBird || false
+                })) || []
+              };
+
+              try {
+                const result = await createEvent(completeEventData);
+                if (result.success) {
+                  localStorage.setItem('currentEventId', result.eventId);
+                  router.push('/organize/create/registration?eventId=' + result.eventId);
+                } else {
+                  console.error(result.message);
+                }
+              } catch (error) {
+                console.error('Event creation failed:', error);
+              }
             }}
             onPrev={() => setCurrentStep(steps.length - 2)}
-            onSubmit={handleSubmit}
             isLastStep={true}
-          >
-            {/* <div className="space-y-6">              
-              <DynamicRegistrationFields 
-                initialFields={dynamicFields}
-                onFieldsChange={handleDynamicFieldsChange}
-              />
-            </div> */}
-          </EventMediaUpload>
+          />
         )}
       </div>
     </div>

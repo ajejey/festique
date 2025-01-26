@@ -3,54 +3,115 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { ImagePlus, Trash2 } from 'lucide-react'
+import { uploadFile } from '@/app/organize/actions'
 
 export default function EventMediaUpload({ 
   initialData, 
   onNext,
   onPrev,
-  onSubmit,
   isLastStep 
 }) {
   const [coverImage, setCoverImage] = useState(initialData.coverImage || null)
   const [additionalImages, setAdditionalImages] = useState(initialData.additionalImages || [])
   const [errors, setErrors] = useState({})
+  const [isUploading, setIsUploading] = useState(false)
   const coverImageRef = useRef(null)
   const additionalImagesRef = useRef(null)
 
-  const handleCoverImageUpload = (e) => {
+  const handleCoverImageUpload = async (e) => {
     const file = e.target.files[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setCoverImage({
-          file,
-          preview: reader.result
-        })
-        setErrors(prev => ({ ...prev, coverImage: '' }))
+      // Validate file type and size
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+      const maxSize = 5 * 1024 * 1024 // 5MB
+
+      if (!validTypes.includes(file.type)) {
+        setErrors(prev => ({
+          ...prev,
+          coverImage: 'Invalid file type. Please upload JPEG, PNG, GIF, or WebP.'
+        }))
+        return
       }
-      reader.readAsDataURL(file)
+
+      if (file.size > maxSize) {
+        setErrors(prev => ({
+          ...prev,
+          coverImage: 'File size exceeds 5MB limit.'
+        }))
+        return
+      }
+
+      setIsUploading(true)
+      try {
+        const fileToUpload = new File([file], file.name, {
+          type: file.type,
+          lastModified: file.lastModified
+        });
+
+        const uploadResult = await uploadFile(fileToUpload, 'event-covers')
+        setCoverImage(uploadResult.url)
+        setErrors(prev => ({ ...prev, coverImage: '' }))
+      } catch (error) {
+        console.error('Cover Image Upload Error:', error)
+        setErrors(prev => ({
+          ...prev,
+          coverImage: `Failed to upload image: ${error.message}`
+        }))
+      } finally {
+        setIsUploading(false)
+      }
     }
   }
 
-  const handleAdditionalImagesUpload = (e) => {
+  const handleAdditionalImagesUpload = async (e) => {
     const files = Array.from(e.target.files)
-    const newImages = files.map(file => {
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      return new Promise(resolve => {
-        reader.onloadend = () => {
-          resolve({
-            file,
-            preview: reader.result
-          })
-        }
-      })
-    })
+    
+    if (files.length + additionalImages.length > 5) {
+      setErrors(prev => ({
+        ...prev,
+        additionalImages: 'Maximum 5 images allowed'
+      }))
+      return
+    }
 
-    Promise.all(newImages).then(processedImages => {
-      setAdditionalImages(prev => [...prev, ...processedImages])
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    const maxSize = 5 * 1024 * 1024 // 5MB
+
+    const invalidFiles = files.filter(file => 
+      !validTypes.includes(file.type) || file.size > maxSize
+    )
+
+    if (invalidFiles.length > 0) {
+      setErrors(prev => ({
+        ...prev,
+        additionalImages: 'All images must be JPEG, PNG, GIF, or WebP and under 5MB.'
+      }))
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const fileToUpload = new File([file], file.name, {
+          type: file.type,
+          lastModified: file.lastModified
+        });
+        const uploadResult = await uploadFile(fileToUpload, 'event-additional-images')
+        return uploadResult.url
+      })
+
+      const uploadedUrls = await Promise.all(uploadPromises)
+      setAdditionalImages(prev => [...prev, ...uploadedUrls])
       setErrors(prev => ({ ...prev, additionalImages: '' }))
-    })
+    } catch (error) {
+      console.error('Additional Images Upload Error:', error)
+      setErrors(prev => ({
+        ...prev,
+        additionalImages: `Failed to upload images: ${error.message}`
+      }))
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const removeCoverImage = () => {
@@ -61,8 +122,7 @@ export default function EventMediaUpload({
   }
 
   const removeAdditionalImage = (index) => {
-    const newImages = additionalImages.filter((_, i) => i !== index)
-    setAdditionalImages(newImages)
+    setAdditionalImages(prev => prev.filter((_, i) => i !== index))
   }
 
   const validateForm = () => {
@@ -83,10 +143,10 @@ export default function EventMediaUpload({
   const handleSubmit = (e) => {
     e.preventDefault()
     if (validateForm()) {
-      onNext({ coverImage, additionalImages })
-      if (isLastStep) {
-        onSubmit()
-      }
+      onNext({
+        coverImage,
+        additionalImages
+      })
     }
   }
 
@@ -111,13 +171,11 @@ export default function EventMediaUpload({
           {coverImage ? (
             <div className="relative w-full max-h-64 overflow-hidden rounded-lg">
               <Image 
-                src={coverImage.preview} 
+                src={coverImage} 
                 alt="Cover" 
-                layout="responsive"
                 width={800} 
                 height={400} 
-                objectFit="cover"
-                className="rounded-lg"
+                className="w-full h-64 object-cover rounded-lg"
               />
               <button
                 type="button"
@@ -137,20 +195,22 @@ export default function EventMediaUpload({
                 ref={coverImageRef}
                 accept="image/*"
                 onChange={handleCoverImageUpload}
+                disabled={isUploading}
                 className="hidden"
                 id="coverImageUpload"
               />
               <label 
                 htmlFor="coverImageUpload"
-                className="
+                className={`
                   cursor-pointer flex flex-col items-center 
                   text-neutral-600 hover:text-primary
                   transition-colors
-                "
+                  ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}
+                `}
               >
                 <ImagePlus className="w-12 h-12 mb-4" />
                 <p className="font-montserrat">
-                  Click to upload cover image
+                  {isUploading ? 'Uploading...' : 'Click to upload cover image'}
                 </p>
                 <p className="text-xs text-neutral-500 mt-2">
                   Recommended size: 1200x630 pixels
@@ -186,20 +246,22 @@ export default function EventMediaUpload({
             accept="image/*"
             multiple
             onChange={handleAdditionalImagesUpload}
+            disabled={isUploading || additionalImages.length >= 5}
             className="hidden"
             id="additionalImagesUpload"
           />
           <label 
             htmlFor="additionalImagesUpload"
-            className="
+            className={`
               cursor-pointer flex flex-col items-center 
               text-neutral-600 hover:text-primary
               transition-colors
-            "
+              ${(isUploading || additionalImages.length >= 5) ? 'opacity-50 cursor-not-allowed' : ''}
+            `}
           >
             <ImagePlus className="w-12 h-12 mb-4" />
             <p className="font-montserrat">
-              Click to upload additional images
+              {isUploading ? 'Uploading...' : 'Click to upload additional images'}
             </p>
             <p className="text-xs text-neutral-500 mt-2">
               Maximum 5 images, each up to 5MB
@@ -208,17 +270,16 @@ export default function EventMediaUpload({
 
           {additionalImages.length > 0 && (
             <div className="grid grid-cols-3 md:grid-cols-5 gap-4 mt-6">
-              {additionalImages.map((image, index) => (
+              {additionalImages.map((url, index) => (
                 <div 
                   key={index} 
                   className="relative rounded-lg overflow-hidden"
                 >
                   <Image 
-                    src={image.preview} 
+                    src={url} 
                     alt={`Additional image ${index + 1}`} 
                     width={200} 
                     height={200} 
-                    objectFit="cover"
                     className="w-full h-24 object-cover"
                   />
                   <button
@@ -257,11 +318,13 @@ export default function EventMediaUpload({
 
         <button
           type="submit"
+          disabled={isUploading}
           className="
             flex items-center bg-[#FF6B6B] text-white 
             px-6 py-3 rounded-full 
             hover:bg-[#ff5252] transition-colors
             font-montserrat font-semibold
+            disabled:opacity-50 disabled:cursor-not-allowed
           "
         >
           {isLastStep ? 'Create Event' : 'Next Step'}

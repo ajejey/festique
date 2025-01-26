@@ -79,7 +79,7 @@ export default function RegistrationModal({
       w-full py-3 px-6 rounded-full
       font-montserrat font-semibold
       flex items-center justify-center gap-2
-      ${isRegistrationOpen && spotsLeft > 0
+      ${isRegistrationOpen
         ? 'bg-[#FF6B6B] text-white hover:bg-[#ff5252]'
         : 'bg-neutral-200 text-neutral-500 cursor-not-allowed'
       }
@@ -89,15 +89,13 @@ export default function RegistrationModal({
     return (
       <button
         onClick={() => setIsModalOpen(true)}
-        disabled={!isRegistrationOpen || spotsLeft === 0}
+        disabled={!isRegistrationOpen}
         className={buttonClasses}
       >
         <Ticket className="w-5 h-5" />
-        {!isRegistrationOpen 
-          ? 'Registration Closed'
-          : spotsLeft === 0
-            ? 'Sold Out'
-            : 'Register Now'
+        {isRegistrationOpen 
+          ? 'Register Now'
+          : 'Registration Closed'
         }
       </button>
     )

@@ -102,7 +102,7 @@ export default function EventBasicInfoForm({
       if (!validTypes.includes(file.type)) {
         setErrors(prev => ({
           ...prev,
-          'organizerDetails.logo': 'Invalid file type. Use JPEG, PNG, GIF, or WebP.'
+          'organizerDetails.logo': 'Invalid file type. Please upload JPEG, PNG, GIF, or WebP.'
         }))
         return
       }
@@ -110,29 +110,26 @@ export default function EventBasicInfoForm({
       if (file.size > maxSize) {
         setErrors(prev => ({
           ...prev,
-          'organizerDetails.logo': 'File size must be less than 5MB.'
+          'organizerDetails.logo': 'File size exceeds 5MB limit.'
         }))
         return
       }
 
-      // Clear previous logo errors
-      if (errors['organizerDetails.logo']) {
-        const { 'organizerDetails.logo': removedError, ...restErrors } = errors
-        setErrors(restErrors)
-      }
+      // Clear previous errors
+      setErrors(prev => ({ ...prev, 'organizerDetails.logo': '' }))
+      setIsUploading(true)
 
       try {
-        setIsUploading(true)
-        // Use uploadFile to get the URL
-        const uploadResult = await uploadFile(file, 'organizer-logos')
-        
-        setLogoInput(prev => ({
-          type: 'file',
-          value: uploadResult.url,
-          file: null // Only store the URL, not the file
-        }))
+        // Create a new File object with the original file's properties
+        const fileToUpload = new File([file], file.name, {
+          type: file.type,
+          lastModified: file.lastModified
+        });
 
-        // Update form data with the uploaded logo URL
+        // Upload file using server action
+        const uploadResult = await uploadFile(fileToUpload, 'organizer-logos')
+        
+        // Update form data with uploaded logo URL
         setFormData(prev => ({
           ...prev,
           organizerDetails: {
@@ -140,10 +137,18 @@ export default function EventBasicInfoForm({
             logo: uploadResult.url
           }
         }))
+
+        // Update logo input state
+        setLogoInput(prev => ({
+          ...prev,
+          value: uploadResult.url,
+          file: fileToUpload
+        }))
       } catch (error) {
+        console.error('Logo Upload Error:', error)
         setErrors(prev => ({
           ...prev,
-          'organizerDetails.logo': 'Failed to upload logo. Please try again.'
+          'organizerDetails.logo': `Failed to upload logo: ${error.message}`
         }))
       } finally {
         setIsUploading(false)

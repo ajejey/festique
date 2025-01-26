@@ -279,12 +279,12 @@ export default async function EventDetailPage({ params }) {
                   <TicketTiers event={event} />
 
                   {/* Registration Status */}
-                  <div className="flex items-center justify-center gap-2 text-sm">
+                  {/* <div className="flex items-center justify-center gap-2 text-sm">
                     <Users className="w-4 h-4" />
                     <span>
                       {spotsLeft} spots left out of {event.capacity?.total || 0}
                     </span>
-                  </div>
+                  </div> */}
 
                   {/* Registration Deadline */}
                   <div className="text-center text-sm text-neutral-600">

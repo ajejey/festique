@@ -287,18 +287,6 @@ const eventSchema = new mongoose.Schema({
       type: String,
       trim: true
     },
-    ageRestrictions: {
-      minimumAge: {
-        type: Number,
-        min: 0,
-        max: 120
-      },
-      maximumAge: {
-        type: Number,
-        min: 0,
-        max: 120
-      }
-    },
     medicalCertificateRequired: {
       type: Boolean,
       default: false
@@ -316,7 +304,7 @@ const eventSchema = new mongoose.Schema({
         type: String,
         enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
       }],
-      designUrl: {
+      designImages: {
         type: [String],
         trim: true,
         validate: {
@@ -345,7 +333,7 @@ const eventSchema = new mongoose.Schema({
         type: String,
         enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
       }],
-      designUrl: {
+      designImages: {
         type: [String],
         trim: true,
         validate: {
@@ -357,7 +345,6 @@ const eventSchema = new mongoose.Schema({
       },
       material: {
         type: String,
-        enum: ['Cotton', 'Polyester', 'Blend', 'Moisture-Wicking']
       },
       quantity: {
         type: Number,
