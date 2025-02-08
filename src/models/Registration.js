@@ -38,8 +38,12 @@ const registrationSchema = new mongoose.Schema({
   // Event Category and Ticket Details
   category: {
     type: String,
-    required: true
+    required: false
   },
+  categoryPreferences: [{
+    type: String,
+    trim: true
+  }],
   ticketTier: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Event.ticketTiers'
@@ -64,12 +68,6 @@ const registrationSchema = new mongoose.Schema({
       type: String,
       required: true,
       trim: true,
-      validate: {
-        validator: function(v) {
-          return /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/.test(v)
-        },
-        message: 'Please enter a valid phone number'
-      }
     },
     dateOfBirth: {
       type: Date,
@@ -85,7 +83,6 @@ const registrationSchema = new mongoose.Schema({
     },
     gender: {
       type: String,
-      enum: ['male', 'female', 'other', 'prefer_not_to_say'],
       required: false
     },
 
@@ -164,39 +161,52 @@ const registrationSchema = new mongoose.Schema({
     }
   },
 
+  // T-shirt Details
+  tshirtDetails: {
+    size: {
+      type: String,
+      required: false,
+      trim: true
+    },
+    additionalTshirts: [{
+      tshirtId: String,
+      size: String,
+      quantity: Number
+    }]
+  },
+
+  // Rules and Status
+  rulesAcknowledged: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
+
+  status: {
+    type: String,
+    enum: ['pending', 'completed', 'cancelled'],
+    default: 'pending'
+  },
+
+  completedAt: {
+    type: Date
+  },
+
   // Payment Details
   payment: {
-    amount: {
-      type: Number,
-      required: false,
-      min: 0
-    },
-    currency: {
-      type: String,
-      default: 'INR'
-    },
-    method: {
-      type: String,
-      enum: ['credit_card', 'debit_card', 'net_banking', 'upi', 'wallet']
-    },
-    razorpayOrderId: String,
-    razorpayPaymentId: String,
     status: {
       type: String,
       enum: ['pending', 'completed', 'failed', 'refunded'],
       default: 'pending'
     },
+    amount: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    transactionId: String,
     paidAt: Date,
-    refund: {
-      status: {
-        type: String,
-        enum: ['not_applicable', 'pending', 'processed'],
-        default: 'not_applicable'
-      },
-      amount: Number,
-      processedAt: Date,
-      reason: String
-    }
+    refundedAt: Date
   },
 
   // Event Participation Details

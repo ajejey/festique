@@ -24,7 +24,14 @@ export default function RegistrationModal({
     handleSubmit, 
     formState: { errors },
     watch
-  } = useForm()
+  } = useForm({
+    defaultValues: {
+      fullName: '',
+      email: '',
+      phone: '',
+      categoryPreferences: []
+    }
+  })
 
   const onSubmit = async (data) => {
     try {
@@ -40,8 +47,9 @@ export default function RegistrationModal({
       // Prepare registration data with user ID
       const registrationData = {
         eventId,
-        category: data.category,
-        user: userResult._id,  // Add user ID here
+        user: userResult._id,
+        category: data.categoryPreferences[0],
+        categoryPreferences: data.categoryPreferences,
         registrationDetails: {
           name: data.fullName,
           email: data.email,
@@ -62,7 +70,6 @@ export default function RegistrationModal({
       // Redirect to complete registration page
       router.push(`/events/${eventId}/register/${registrationResult.registration._id}`)
     } catch (error) {
-      // Handle errors
       toast.error('Registration Failed', {
         description: error.message || 'Please try again later.',
         duration: 4000,
@@ -101,190 +108,181 @@ export default function RegistrationModal({
     )
   }
 
-  // Category Selection
-  const renderCategorySelection = () => {
-    return (
-      <div className="space-y-4">
-        <h3 className="font-playfair font-semibold text-lg text-neutral-900">
-          Select Category
-        </h3>
-        {eventCategories.map((category) => (
-          <label 
-            key={category.name}
-            className={`
-              flex items-center justify-between p-4 rounded-xl border 
-              cursor-pointer transition-all duration-300
-              ${watch('category') === category.name 
-                ? 'border-[#4ECDC4] bg-[#4ECDC4]/10 shadow-sm' 
-                : 'border-neutral-200 hover:border-[#4ECDC4]/50'
-              }
-            `}
-          >
-            <div className="flex items-center gap-3">
-              <input
-                type="radio"
-                {...register('category', { required: 'Please select a category' })}
-                value={category.name}
-                className="
-                  w-4 h-4 
-                  text-[#4ECDC4] 
-                  focus:ring-[#4ECDC4] 
-                  border-neutral-300
-                  focus:ring-2
-                "
-              />
-              <span className="font-montserrat text-neutral-800">
-                {category.name}
-              </span>
-            </div>
-            <span className="font-montserrat font-medium text-[#FF6B6B]">
-              {formatCurrency(category.basePrice || 0)}
-            </span>
-          </label>
-        ))}
-        {errors.category && (
-          <p className="text-red-500 text-xs mt-1">
-            {errors.category.message}
-          </p>
-        )}
-      </div>
-    )
-  }
-
-  // Modal Dialog
-  const renderModal = () => {
-    if (!isModalOpen) return null
-
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-          {/* Modal Header */}
-          <div className="flex justify-between items-center p-6 border-b border-neutral-200">
-            <h2 className="font-playfair text-xl font-bold text-neutral-900">
-              Register for Event
-            </h2>
-            <button 
-              onClick={() => setIsModalOpen(false)} 
-              className="text-neutral-500 hover:text-neutral-900 transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-
-          {/* Modal Content */}
-          <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
-            {renderCategorySelection()}
-
-            {/* Full Name */}
-            <div>
-              <label 
-                htmlFor="fullName" 
-                className="block text-sm font-montserrat text-neutral-700 mb-2"
-              >
-                Full Name
-              </label>
-              <input
-                id="fullName"
-                type="text"
-                placeholder="Enter your full name"
-                {...register('fullName', { 
-                  required: 'Full name is required',
-                  minLength: {
-                    value: 2,
-                    message: 'Name must be at least 2 characters'
-                  }
-                })}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-              />
-              {errors.fullName && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.fullName.message}
-                </p>
-              )}
-            </div>
-
-            {/* Email */}
-            <div>
-              <label 
-                htmlFor="email" 
-                className="block text-sm font-montserrat text-neutral-700 mb-2"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                {...register('email', { 
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: 'Invalid email address'
-                  }
-                })}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-              />
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            {/* Phone Number */}
-            <div>
-              <label 
-                htmlFor="phone" 
-                className="block text-sm font-montserrat text-neutral-700 mb-2"
-              >
-                Phone Number
-              </label>
-              <input
-                id="phone"
-                type="tel"
-                placeholder="+91 1234567890"
-                {...register('phone', { 
-                  required: 'Phone number is required',
-                  pattern: {
-                    value: /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/,
-                    message: 'Invalid phone number'
-                  }
-                })}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-              />
-              {errors.phone && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.phone.message}
-                </p>
-              )}
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center">
-                <AlertCircle className="w-5 h-5 mr-2" />
-                <p className="text-sm">{error}</p>
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#FF6B6B] text-white py-3 rounded-full hover:bg-primary-600 transition-colors disabled:opacity-50"
-            >
-              {isLoading ? 'Processing...' : 'Register and Pay'}
-            </button>
-          </form>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <>
       {renderRegistrationButton()}
-      {renderModal()}
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => !isLoading && setIsModalOpen(false)}
+          />
+
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-2xl w-full max-w-md mx-4 p-6 space-y-6">
+            {/* Close Button */}
+            <button
+              onClick={() => !isLoading && setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600"
+              disabled={isLoading}
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Modal Header */}
+            <div>
+              <h2 className="font-playfair text-2xl font-bold text-neutral-800">
+                Start Your Registration
+              </h2>
+              <p className="text-neutral-600 mt-1">
+                Enter your details to begin the registration process
+              </p>
+            </div>
+
+            {/* Registration Form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              {/* Full Name */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  {...register('fullName', { 
+                    required: 'Full name is required',
+                    minLength: {
+                      value: 2,
+                      message: 'Name must be at least 2 characters'
+                    }
+                  })}
+                  className={`w-full px-4 py-2.5 rounded-lg border ${
+                    errors.fullName 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : 'border-neutral-300 focus:ring-primary'
+                  } focus:outline-none focus:ring-2 transition-colors`}
+                  disabled={isLoading}
+                />
+                {errors.fullName && (
+                  <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  {...register('email', { 
+                    required: 'Email is required',
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: 'Invalid email address'
+                    }
+                  })}
+                  className={`w-full px-4 py-2.5 rounded-lg border ${
+                    errors.email 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : 'border-neutral-300 focus:ring-primary'
+                  } focus:outline-none focus:ring-2 transition-colors`}
+                  disabled={isLoading}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                )}
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Phone *
+                </label>
+                <input
+                  type="tel"
+                  {...register('phone', { 
+                    required: 'Phone number is required',
+                    pattern: {
+                      value: /^[0-9]{10}$/,
+                      message: 'Please enter a valid 10-digit phone number'
+                    }
+                  })}
+                  className={`w-full px-4 py-2.5 rounded-lg border ${
+                    errors.phone 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : 'border-neutral-300 focus:ring-primary'
+                  } focus:outline-none focus:ring-2 transition-colors`}
+                  disabled={isLoading}
+                />
+                {errors.phone && (
+                  <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>
+                )}
+              </div>
+
+              {/* Category Preferences */}
+              <div className="bg-neutral-50 p-4 rounded-xl">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="flex-shrink-0 mt-1">
+                    <AlertCircle className="w-5 h-5 text-neutral-400" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-neutral-700">
+                      Interested Categories
+                    </h4>
+                    <p className="text-xs text-neutral-500 mt-0.5">
+                      Select categories you&apos;re interested in. You can change your final category later.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  {eventCategories.map((category) => (
+                    <label 
+                      key={category.name}
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-100 cursor-pointer transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        value={category.name}
+                        {...register('categoryPreferences')}
+                        className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary"
+                        disabled={isLoading}
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-neutral-700">
+                          {category.name}
+                        </p>
+                        <p className="text-xs text-neutral-500">
+                          {category.distance} • {formatCurrency(category.basePrice)}
+                        </p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-primary text-white py-3 px-6 rounded-full font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Processing...</span>
+                  </div>
+                ) : (
+                  'Continue Registration'
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   )
 }

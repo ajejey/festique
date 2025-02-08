@@ -33,6 +33,7 @@ export async function createInitialRegistration(data) {
       event: data.eventId,
       user: data.user,  // Use the user ID passed from the client
       category: data.category,
+      categoryPreferences: data.categoryPreferences || [], // Add category preferences
       ticketTier: currentTicketTier._id,
       registrationDetails: {
         name: data.registrationDetails.name,

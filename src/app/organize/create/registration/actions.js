@@ -49,7 +49,7 @@ export async function saveRegistrationFormFields(eventId, fields) {
 export async function getEventRegistrationFields(eventId) {
   // Verify authentication and role
   const user = await requireAuth()
-  await requireRole(user, ['organizer', 'admin'])
+  await requireRole(['organizer', 'admin'])
 
   try {
     // Connect to database

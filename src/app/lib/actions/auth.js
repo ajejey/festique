@@ -133,7 +133,7 @@ export async function verifyOTP(email, otp) {
   )
 
   // Set HTTP-only cookie
-  cookies().set('auth-token', token, {
+  await cookies().set('auth-token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',

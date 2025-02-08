@@ -53,6 +53,7 @@ export async function createEvent(formData) {
       }
     })
 
+
     // File upload handling is now done in the EventMediaUpload component
     // Just use the URLs directly from formData
     const newEvent = await Event.create({
@@ -125,27 +126,27 @@ export async function createEvent(formData) {
       schedule: formData.schedule
         ? formData.schedule
           .filter(item => 
-            item.time instanceof Date && 
+            item.time && 
             item.activity && 
             item.activity.trim() !== ''
           )
           .map(item => ({
-            time: item.time.toISOString(),
-            activity: item.activity
+            time: item.time,
+            activity: item.activity.trim()
           }))
         : [],
       tshirtOptions: {
         includedTshirt: {
           provided: formData.tshirtOptions?.includedTshirt?.provided || false,
           sizes: formData.tshirtOptions?.includedTshirt?.sizes || [],
-          designUrl: formData.tshirtOptions?.includedTshirt?.designUrl || '',
+          designImages: formData.tshirtOptions?.includedTshirt?.designImages || [],
           material: formData.tshirtOptions?.includedTshirt?.material || 'Moisture-Wicking'
         },
         additionalTshirts: (formData.tshirtOptions?.additionalTshirts || []).map(tshirt => ({
           name: tshirt.name || '',
           price: parseFloat(tshirt.price) || 0,
           sizes: tshirt.sizes || [],
-          designUrl: tshirt.designUrl || '',
+          designImages: tshirt.designImages || [],
           material: tshirt.material || 'Moisture-Wicking',
           quantity: parseInt(tshirt.quantity) || 0,
           availableTill: tshirt.availableTill ? new Date(tshirt.availableTill) : null
@@ -164,6 +165,8 @@ export async function createEvent(formData) {
 
     // Revalidate the organize page to show the new event
     revalidatePath('/organize')
+    revalidatePath('/events')
+    revalidatePath(`/events/${newEvent._id}`)
 
     return { 
       success: true, 

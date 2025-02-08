@@ -13,7 +13,7 @@ export async function getEvents(filters = {}) {
 
     // Default query to get upcoming events
     const baseQuery = {
-      startDate: { $gte: new Date() },
+      // startDate: { $gte: new Date() },
     //   status: 'published'
     }
 

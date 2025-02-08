@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useForm, useFieldArray, Controller } from 'react-hook-form'
-import { ChevronRight, ChevronLeft, PlusCircle, Trash2 } from 'lucide-react'
+import { ChevronRight, ChevronLeft, PlusCircle, Trash2, Loader2 } from 'lucide-react'
 import { uploadFile } from '@/app/organize/actions'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -164,6 +164,8 @@ export default function EventDetailsReactHookForm({
     name: 'tshirtOptions.additionalTshirts'
   })
 
+  const [uploadingField, setUploadingField] = useState(null);
+
   const preprocessAmenitiesAndRules = (data) => {
     // Process amenities input
     if (data.amenitiesInput && data.amenitiesInput.trim() !== '') {
@@ -238,12 +240,15 @@ export default function EventDetailsReactHookForm({
   }
 
   const handleFileUpload = async (files, field) => {
+    setUploadingField(field);
+
     // Convert FileList to array if needed
     const fileArray = Array.isArray(files) ? files : Array.from(files);
 
     // Validate file count
     if (fileArray.length > 5) {
       alert('You can upload a maximum of 5 design images');
+      setUploadingField(null);
       return null;
     }
 
@@ -251,6 +256,7 @@ export default function EventDetailsReactHookForm({
     const oversizedFiles = fileArray.filter(file => file.size > 5 * 1024 * 1024);
     if (oversizedFiles.length > 0) {
       alert('Each design image must be less than 5MB');
+      setUploadingField(null);
       return null;
     }
 
@@ -285,11 +291,12 @@ export default function EventDetailsReactHookForm({
 
       // Set form value
       setValue(field, previews);
-
+      setUploadingField(null);
       return successfulUploads;
     } catch (error) {
       console.error('Unexpected file upload error:', error);
       alert('An error occurred during file upload');
+      setUploadingField(null);
       return null;
     }
   }
@@ -824,17 +831,24 @@ export default function EventDetailsReactHookForm({
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  T-shirt Design Images (Max 5)
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-neutral-700">
+                  Design Images (Max 5)
                 </label>
                 <input
                   type="file"
                   multiple
                   accept="image/*"
                   onChange={(e) => handleFileUpload(e.target.files, 'tshirtOptions.includedTshirt.designImages')}
-                  className="w-full px-3 py-2 rounded-lg border border-neutral-300"
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={uploadingField === 'tshirtOptions.includedTshirt.designImages'}
                 />
+                {uploadingField === 'tshirtOptions.includedTshirt.designImages' && (
+                  <div className="flex items-center gap-2 text-sm text-neutral-600">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Uploading images...</span>
+                  </div>
+                )}
                 {watch('tshirtOptions.includedTshirt.designImages')?.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {watch('tshirtOptions.includedTshirt.designImages').map((url, index) => (
@@ -970,17 +984,24 @@ export default function EventDetailsReactHookForm({
                 />
               </div>
 
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  T-shirt Design Images (Max 5)
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-neutral-700">
+                  Design Images (Max 5)
                 </label>
                 <input
                   type="file"
                   multiple
                   accept="image/*"
                   onChange={(e) => handleFileUpload(e.target.files, `tshirtOptions.additionalTshirts.${index}.designImages`)}
-                  className="w-full px-3 py-2 rounded-lg border border-neutral-300"
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={uploadingField === `tshirtOptions.additionalTshirts.${index}.designImages`}
                 />
+                {uploadingField === `tshirtOptions.additionalTshirts.${index}.designImages` && (
+                  <div className="flex items-center gap-2 text-sm text-neutral-600">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Uploading images...</span>
+                  </div>
+                )}
                 {watch(`tshirtOptions.additionalTshirts.${index}.designImages`)?.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {watch(`tshirtOptions.additionalTshirts.${index}.designImages`).map((url, designIndex) => (
