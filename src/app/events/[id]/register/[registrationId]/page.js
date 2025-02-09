@@ -36,6 +36,11 @@ export default function CompleteRegistrationPage() {
           allergies: '',
           medications: '',
           emergencyMedicalNotes: ''
+        },
+        athleteProfile: {
+          runningExperience: 'Beginner',
+          previousRaces: [],
+          personalBests: new Map()
         }
       },
       category: '',
@@ -74,6 +79,11 @@ export default function CompleteRegistrationPage() {
         }
         if (registration.registrationDetails?.gender) {
           setValue('registrationDetails.gender', registration.registrationDetails.gender)
+        }
+        
+        // Pre-fill athlete profile if exists
+        if (registration.registrationDetails?.athleteProfile) {
+          setValue('registrationDetails.athleteProfile', registration.registrationDetails.athleteProfile)
         }
         
         // Pre-fill category if exists
@@ -122,6 +132,11 @@ export default function CompleteRegistrationPage() {
             allergies: data.registrationDetails.medicalInfo.allergies?.split(',').map(item => item.trim()) || [],
             medications: data.registrationDetails.medicalInfo.medications?.split(',').map(item => item.trim()) || [],
             emergencyMedicalNotes: data.registrationDetails.medicalInfo.emergencyMedicalNotes
+          },
+          athleteProfile: {
+            runningExperience: data.registrationDetails.athleteProfile?.runningExperience || 'Beginner',
+            previousRaces: data.registrationDetails.athleteProfile?.previousRaces || [],
+            personalBests: data.registrationDetails.athleteProfile?.personalBests || new Map()
           }
         },
         category: data.category,
@@ -140,6 +155,8 @@ export default function CompleteRegistrationPage() {
           }
         })
       }
+
+      console.log("formattedData ", formattedData)
 
       const result = await completeRegistration(formattedData)
 
@@ -208,6 +225,14 @@ export default function CompleteRegistrationPage() {
               />
             </div>
 
+            {/* Address */}
+            <div className="bg-white p-6 rounded-xl shadow-sm">
+              <AddressSection 
+                register={register}
+                errors={errors}
+              />
+            </div>
+
             {/* T-shirt Selection */}
             <div className="bg-white p-6 rounded-xl shadow-sm">
               <TshirtSection 
@@ -228,14 +253,6 @@ export default function CompleteRegistrationPage() {
             {/* Emergency Contact */}
             <div className="bg-white p-6 rounded-xl shadow-sm">
               <EmergencyContactSection 
-                register={register}
-                errors={errors}
-              />
-            </div>
-
-            {/* Address */}
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <AddressSection 
                 register={register}
                 errors={errors}
               />
