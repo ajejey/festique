@@ -19,30 +19,6 @@ export default function MobileRegistration({ event, isRegistrationOpen, spotsLef
 
   return (
     <>
-      {/* Floating Offer Banner - Only show when there's an active tier */}
-      {/* {currentTier && (
-        <div className="
-          fixed bottom-[108px] left-4 right-4
-          bg-primary text-white
-          px-4 py-3 rounded-xl
-          flex items-center justify-between
-          shadow-lg
-          lg:hidden
-          z-50
-        ">
-          <div className="flex items-center gap-2">
-            <Tags className="w-5 h-5" />
-            <div>
-              <div className="font-medium">{currentTier.name} Offer</div>
-              <div className="text-sm text-white/90">Save {formatCurrency(basePrice - currentPrice)}</div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-lg font-bold">{discount}% OFF</div>
-            <div className="text-sm text-white/90">{formatTimeRemaining(currentTier.endDate)}</div>
-          </div>
-        </div>
-      )} */}
 
       {/* Registration Bar */}
       <div className="

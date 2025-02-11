@@ -4,6 +4,7 @@ import { connectDB } from '@/app/lib/db'
 import Registration from '@/models/Registration'
 import Event from '@/models/Event'
 import { User } from '@/models/User'
+import { generateAuthToken } from '@/app/lib/actions/auth'
 
 export async function createInitialRegistration(data) {
   try {
@@ -71,6 +72,8 @@ export async function createUserForRegistration(registrationDetails) {
 
     // Create or update user
     let user = await User.findOne({ email: registrationDetails.email })
+    const isNewUser = !user
+
     if (!user) {
       user = new User({
         email: registrationDetails.email,
@@ -79,7 +82,10 @@ export async function createUserForRegistration(registrationDetails) {
         role: 'participant'
       })
       await user.save()
+
     }
+    // Generate JWT token and set cookie for new user
+    await generateAuthToken(user, isNewUser)
 
     // Convert Mongoose document to plain object and remove sensitive data
     const userObject = user.toObject()
@@ -90,7 +96,8 @@ export async function createUserForRegistration(registrationDetails) {
       _id: user._id,
       email: user.email,
       name: user.name,
-      phone: user.phone
+      phone: user.phone,
+      isNewUser
     }))
   } catch (error) {
     console.error('User creation error:', error)

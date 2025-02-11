@@ -120,13 +120,31 @@ export async function verifyOTP(email, otp) {
   }
 
   // Generate JWT
+  const token = await generateAuthToken(user, isNewUser)
+
+  return { success: true, isNewUser }
+}
+
+/**
+ * Generate JWT token and set HTTP-only cookie for authenticated user
+ * @param {Object} user - User object containing user details
+ * @param {boolean} [isNewUser=false] - Flag to indicate if this is a new user
+ * @returns {string} Generated JWT token
+ */
+export async function generateAuthToken(user, isNewUser = false) {
+  // Validate required user fields
+  if (!user || !user._id || !user.email) {
+    throw new Error('Invalid user object for token generation')
+  }
+
+  // Generate JWT
   const token = jwt.sign(
     {
       userId: user._id,
       email: user.email,
-      role: user.role,
-      canCreateEvents: user.canCreateEvents,
-      isNewUser
+      role: user.role || 'participant',
+      canCreateEvents: user.canCreateEvents || false,
+      isNewUser: isNewUser
     },
     process.env.JWT_SECRET,
     { expiresIn: '7d' }
@@ -140,7 +158,7 @@ export async function verifyOTP(email, otp) {
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   })
 
-  return { success: true, isNewUser }
+  return token
 }
 
 export async function logout() {

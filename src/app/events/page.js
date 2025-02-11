@@ -23,9 +23,8 @@ export default async function EventsPage() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-neutral-50 rounded-2xl p-6 shadow-sm">
+      {/* <div className="bg-neutral-50 rounded-2xl p-6 shadow-sm">
         <div className="grid md:grid-cols-3 gap-4">
-          {/* Event Type Filter */}
           <div>
             <label 
               htmlFor="eventType" 
@@ -48,7 +47,6 @@ export default async function EventsPage() {
             </select>
           </div>
 
-          {/* City Filter */}
           <div>
             <label 
               htmlFor="city" 
@@ -71,7 +69,6 @@ export default async function EventsPage() {
             </select>
           </div>
 
-          {/* Date Range */}
           <div>
             <label 
               htmlFor="dateRange" 
@@ -90,7 +87,7 @@ export default async function EventsPage() {
             />
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Events Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

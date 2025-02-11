@@ -1,10 +1,10 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { 
-  Calendar, 
-  MapPin, 
-  Users, 
-  Clock, 
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Clock,
   Trophy,
   Route,
   Ticket,
@@ -25,7 +25,7 @@ export default async function EventDetailPage({ params }) {
   const event = await getEventById(id)
 
   console.log("event", event)
-  
+
   if (!event) {
     notFound()
   }
@@ -38,7 +38,7 @@ export default async function EventDetailPage({ params }) {
     <div>
       <main className="min-h-screen pt-16 pb-24 lg:pb-16">
         {/* Hero Section */}
-        <section className="relative h-[50vh] md:h-[60vh]">
+        <section className="relative h-[40vh] md:h-[50vh]">
           <Image
             src={event.coverImage || '/default-event-cover.jpg'}
             alt={event.name}
@@ -46,45 +46,41 @@ export default async function EventDetailPage({ params }) {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/50 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-8">
-            <div className="container mx-auto">
-              <h1 className="font-playfair text-4xl md:text-5xl font-bold text-white mb-4">
-                {event.name}
-              </h1>
-              <div className="flex flex-wrap gap-6 text-white/90">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  <span>{formatDate(event.startDate, 'MMMM dd, yyyy')}</span>
-                  {/* <span>27-01-2025</span> */}
-                </div>
-                {event.schedule?.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-5 h-5" />
-                    <span>
-                      {new Intl.DateTimeFormat('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }).format(new Date(event.schedule[0].time))}
-                    </span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  <span>{formatLocation(event.location)}</span>
-                </div>
-                {event.categories?.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <Route className="w-5 h-5" />
-                    <span>{event.categories[0].distance}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
         </section>
 
         <div className="container mx-auto px-4 py-8">
+          <div className="mb-2 lg:mb-4">
+            <h1 className="font-playfair text-4xl md:text-5xl font-bold text-neutral-900 mb-4">
+              {event.name}
+            </h1>
+            <div className="flex flex-wrap gap-4 text-neutral-700">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                <span>{formatDate(event.startDate, 'MMMM dd, yyyy')}</span>
+              </div>
+              {event.schedule?.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5" />
+                  <span>
+                    {new Intl.DateTimeFormat('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }).format(new Date(event.schedule[0].time))}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                <span>{formatLocation(event.location)}</span>
+              </div>
+              {event.categories?.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Route className="w-5 h-5" />
+                  <span>{event.categories[0].distance}</span>
+                </div>
+              )}
+            </div>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-4 md:space-y-8">
@@ -98,13 +94,12 @@ export default async function EventDetailPage({ params }) {
                 </div>
               </section>
 
-              {/* Categories */}
               {event.categories?.length > 0 && (
                 <section className="bg-white rounded-2xl p-6">
                   <h2 className="font-playfair text-2xl font-bold mb-4">Event Categories</h2>
                   <div className="grid gap-4">
                     {event.categories.map((category, index) => (
-                      <div 
+                      <div
                         key={index}
                         className="p-4 rounded-lg bg-neutral-50 space-y-2"
                       >
@@ -147,7 +142,7 @@ export default async function EventDetailPage({ params }) {
                   <h2 className="font-playfair text-2xl font-bold mb-4">Event Schedule</h2>
                   <div className="space-y-4">
                     {event.schedule.map((item, index) => (
-                      <div 
+                      <div
                         key={index}
                         className="flex items-start gap-4 p-4 rounded-lg bg-neutral-50"
                       >
@@ -183,7 +178,7 @@ export default async function EventDetailPage({ params }) {
                       </div>
                     </div>
                     {event.location.googleMapsLink && (
-                      <a 
+                      <a
                         href={event.location.googleMapsLink}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -208,7 +203,7 @@ export default async function EventDetailPage({ params }) {
                   <h2 className="font-playfair text-2xl font-bold mb-4">Amenities</h2>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {event.amenities.map((amenity, index) => (
-                      <div 
+                      <div
                         key={index}
                         className="flex items-center gap-2 p-3 rounded-lg bg-neutral-50"
                       >
@@ -257,7 +252,7 @@ export default async function EventDetailPage({ params }) {
                   <h2 className="font-playfair text-2xl font-bold mb-4">Event Rules</h2>
                   <div className="space-y-3">
                     {event.rules.map((rule, index) => (
-                      <div 
+                      <div
                         key={index}
                         className="flex items-start gap-3"
                       >
@@ -271,20 +266,11 @@ export default async function EventDetailPage({ params }) {
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Registration Card */}
+            <div className="hidden lg:block">
               <div className="bg-white rounded-2xl p-6 sticky top-24">
                 <div className="space-y-6">
                   {/* Ticket Tiers */}
                   <TicketTiers event={event} />
-
-                  {/* Registration Status */}
-                  {/* <div className="flex items-center justify-center gap-2 text-sm">
-                    <Users className="w-4 h-4" />
-                    <span>
-                      {spotsLeft} spots left out of {event.capacity?.total || 0}
-                    </span>
-                  </div> */}
 
                   {/* Registration Deadline */}
                   <div className="text-center text-sm text-neutral-600">
@@ -292,7 +278,7 @@ export default async function EventDetailPage({ params }) {
                   </div>
 
                   {/* Registration Modal */}
-                  <RegistrationModal 
+                  <RegistrationModal
                     eventId={event._id}
                     eventCategories={event.categories}
                     isRegistrationOpen={isRegistrationOpen}
@@ -324,45 +310,63 @@ export default async function EventDetailPage({ params }) {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
 
-              {/* Organizer Card */}
-              {event.organizerDetails && (
-                <div className="bg-white rounded-2xl p-6">
-                  <h3 className="font-playfair text-xl font-bold mb-4">Event Organizer</h3>
-                  <div className="flex items-center gap-4">
-                    {event.organizerDetails.logo && (
-                      <Image
-                        src={event.organizerDetails.logo}
-                        alt={event.organizerDetails.name}
-                        width={60}
-                        height={60}
-                        className="rounded-full"
-                      />
-                    )}
-                    <div>
-                      <div className="font-medium">{event.organizerDetails.name}</div>
-                      <div className="text-sm text-neutral-600">
-                        {event.organizerDetails.contact?.email}
-                      </div>
-                    </div>
-                  </div>
-                  {event.organizerDetails.description && (
-                    <p className="mt-3 text-sm text-neutral-600">
-                      {event.organizerDetails.description}
-                    </p>
-                  )}
-                </div>
-              )}
+          {/* Mobile Registration Card - Sticky Bottom */}
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 p-3 bg-white shadow-2xl border-t border-neutral-100">
+            <div className="space-y-2">
+              {/* Ticket Tiers */}
+              <TicketTiers event={event} />
+
+              {/* Registration Deadline */}
+              <div className="text-center text-xs text-neutral-600 py-1">
+                Registration closes on {formatDate(event.registrationCloseDate)}
+              </div>
+
+              {/* Registration Modal */}
+              <RegistrationModal
+                eventId={event._id}
+                eventCategories={event.categories}
+                isRegistrationOpen={isRegistrationOpen}
+                spotsLeft={spotsLeft}
+              />
+
+              {/* Share and Save */}
+              {/* <div className="flex gap-2">
+                <button className="
+                  flex-1 py-1.5 px-3 rounded-full
+                  border border-neutral-200
+                  text-neutral-700 hover:bg-neutral-50
+                  flex items-center justify-center gap-1
+                  text-xs
+                  transition-colors
+                ">
+                  <Share2 className="w-3 h-3" />
+                  Share
+                </button>
+                <button className="
+                  flex-1 py-1.5 px-3 rounded-full
+                  border border-neutral-200
+                  text-neutral-700 hover:bg-neutral-50
+                  flex items-center justify-center gap-1
+                  text-xs
+                  transition-colors
+                ">
+                  <Heart className="w-3 h-3" />
+                  Save
+                </button>
+              </div> */}
             </div>
           </div>
         </div>
 
         {/* Mobile Registration */}
-        <MobileRegistration 
+        {/* <MobileRegistration 
           event={event}
           isRegistrationOpen={isRegistrationOpen}
           spotsLeft={spotsLeft}
-        />
+        /> */}
       </main>
 
       {/* Registration Modal Button */}
