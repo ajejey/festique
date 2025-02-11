@@ -1,5 +1,6 @@
 import { Montserrat, Playfair_Display, Racing_Sans_One } from 'next/font/google'
 import Header from './components/Header'
+import Footer from '@/components/Footer'
 import { Toaster } from 'sonner'
 import "./globals.css";
 
@@ -38,6 +39,7 @@ export default function RootLayout({ children }) {
       <body className="bg-neutral-50 font-montserrat">
         <Header />
         {children}
+        <Footer />
         <Toaster 
           position="top-right"
           richColors
