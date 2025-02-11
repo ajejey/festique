@@ -72,14 +72,6 @@ const registrationSchema = new mongoose.Schema({
     dateOfBirth: {
       type: Date,
       required: false,
-      validate: {
-        validator: function(v) {
-          // Ensure date of birth is reasonable
-          const age = new Date().getFullYear() - v.getFullYear()
-          return age >= 10 && age < 120
-        },
-        message: 'Invalid date of birth'
-      }
     },
     gender: {
       type: String,
