@@ -54,7 +54,7 @@ export default function Header() {
               Log in
             </Link>
             <Link
-              href="/register"
+              href="/events"
               className="bg-[#FF6B6B] hover:bg-[#ff5252] text-white px-4 py-2 rounded-full text-sm transition-colors"
             >
               Get Started
