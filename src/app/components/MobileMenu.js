@@ -44,7 +44,7 @@ export default function MobileMenu({ navigation }) {
                 Log in
               </Link>
               <Link
-                href="/register"
+                href="/events"
                 className="block px-3 py-2 mt-2 text-base font-medium bg-[#FF6B6B] text-white hover:bg-[#ff5252] rounded-md"
                 onClick={() => setIsOpen(false)}
               >
