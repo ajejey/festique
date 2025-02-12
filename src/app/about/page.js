@@ -50,7 +50,7 @@ export default function AboutPage() {
               </h1>
             </div>
             <p className="font-montserrat text-xl text-neutral-700 mb-8 leading-relaxed">
-              More than a ticketing platform - we're a dynamic ecosystem that transforms how runners discover events, grow together, and achieve their personal best.
+              More than a ticketing platform - we&apos;re a dynamic ecosystem that transforms how runners discover events, grow together, and achieve their personal best.
             </p>
             <div className="flex space-x-4">
               <Link 
@@ -83,7 +83,7 @@ export default function AboutPage() {
           Join the Festique Community
         </h2>
         <p className="font-montserrat text-xl mb-8 max-w-2xl mx-auto">
-          Whether you're an event organizer or a passionate runner, Festique is your platform to discover, grow, and achieve more.
+          Whether you&apos;re an event organizer or a passionate runner, Festique is your platform to discover, grow, and achieve more.
         </p>
         <div className="flex justify-center space-x-4">
           <Link 
