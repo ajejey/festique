@@ -8,8 +8,8 @@ const Footer = () => {
     company: [
       { name: 'About Us', href: '/about' },
       { name: 'Contact Us', href: '/contact' },
-      { name: 'Careers', href: '/careers' },
-      { name: 'Blog', href: '/blog' },
+      // { name: 'Careers', href: '/careers' },
+      // { name: 'Blog', href: '/blog' },
     ],
     legal: [
       { name: 'Terms & Conditions', href: '/terms' },
@@ -17,9 +17,9 @@ const Footer = () => {
       { name: 'Refund Policy', href: '/refund' },
     ],
     support: [
-      { name: 'Help Center', href: '/help' },
-      { name: 'FAQs', href: '/faqs' },
-      { name: 'Report an Issue', href: '/support' },
+      { name: 'Help Center', href: '/contact' },
+      // { name: 'FAQs', href: '/faqs' },
+      { name: 'Report an Issue', href: '/contact' },
     ],
   };
 
@@ -88,7 +88,7 @@ const Footer = () => {
             <div className="flex items-center space-x-3 text-neutral-400">
               <MapPin size={20} />
               <span className="text-sm">
-                Uttrahalli, Bangalore, Karnataka - 560001
+                Uttrahalli, Bangalore, Karnataka - 560061
               </span>
             </div>
             <div className="flex items-center space-x-3 text-neutral-400">

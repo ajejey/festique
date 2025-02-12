@@ -32,8 +32,8 @@ export default function ContactPage() {
               <p className="text-neutral-600">
                 Uttrahalli<br />
                 100 Feet Road<br />
-                MG Road, Bangalore<br />
-                Karnataka - 560001<br />
+                Bangalore<br />
+                Karnataka - 560061<br />
                 India
               </p>
             </div>

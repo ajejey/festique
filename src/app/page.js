@@ -181,12 +181,12 @@ export default function Home() {
               </div>
             </div>
             <div className="relative h-[500px] rounded-2xl overflow-hidden">
-              <Image
+              {/* <Image
                 src="/images/achievements.jpg"
                 alt="Achievement tracking dashboard"
                 fill
                 className="object-cover"
-              />
+              /> */}
             </div>
           </div>
         </div>
@@ -216,7 +216,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-white">
+      {/* <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="font-playfair text-4xl font-bold text-center mb-16">
             Trusted by Runners & Organizers
@@ -243,7 +243,7 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className="py-24 bg-neutral-900 text-white">
@@ -255,7 +255,7 @@ export default function Home() {
             Join thousands of runners and event organizers on Festique.
           </p>
           <Link 
-            href="/register" 
+            href="/events" 
             className="inline-block bg-[#FF6B6B] hover:bg-[#ff5252] text-white px-8 py-4 rounded-full font-medium transition-all"
           >
             Get Started Now
