@@ -1,5 +1,4 @@
 import Image from 'next/image'
-import { notFound } from 'next/navigation'
 import {
   Calendar,
   MapPin,
@@ -16,9 +15,11 @@ import {
 } from 'lucide-react'
 import { getEventById } from '../actions'
 import { formatLocation, formatCurrency, formatDate } from '@/lib/utils'
-import MobileRegistration from './components/MobileRegistration'
 import TicketTiers from './components/TicketTiers'
 import RegistrationModal from './components/RegistrationModal'
+import OrganizerDetails from './components/OrganizerDetails'
+import AdditionalImages from './components/AdditionalImages'
+import TShirtOptions from './components/TShirtOptions'
 
 export default async function EventDetailPage({ params }) {
   const { id } = await params
@@ -93,6 +94,8 @@ export default async function EventDetailPage({ params }) {
                   ))}
                 </div>
               </section>
+
+              <OrganizerDetails organizerDetails={event.organizerDetails} />
 
               {event.categories?.length > 0 && (
                 <section className="bg-white rounded-2xl p-6">
@@ -197,6 +200,11 @@ export default async function EventDetailPage({ params }) {
                 </section>
               )}
 
+              {/* T-Shirt Options */}
+              
+                <TShirtOptions tShirtOptions={event.tshirtOptions} />
+              
+
               {/* Amenities */}
               {event.amenities?.length > 0 && (
                 <section className="bg-white rounded-2xl p-6">
@@ -263,7 +271,15 @@ export default async function EventDetailPage({ params }) {
                   </div>
                 </section>
               )}
+
+              {/* Additional Images */}
+              {event.additionalImages && event.additionalImages.length > 0 && (
+                <AdditionalImages images={event.additionalImages} />
+              )}
             </div>
+
+            {/* Organizer Details */}
+
 
             {/* Sidebar */}
             <div className="hidden lg:block">
@@ -360,6 +376,8 @@ export default async function EventDetailPage({ params }) {
             </div>
           </div>
         </div>
+
+
 
         {/* Mobile Registration */}
         {/* <MobileRegistration 

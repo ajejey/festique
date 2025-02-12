@@ -146,7 +146,7 @@ export function calculateTicketTier(ticketTiers, basePrice) {
     now.getUTCSeconds()
   ))
   
-  console.log("Current UTC time:", utcNow.toISOString())
+  // console.log("Current UTC time:", utcNow.toISOString())
   
   // Sort tiers by start date
   const sortedTiers = [...ticketTiers].sort((a, b) => 
@@ -163,11 +163,11 @@ export function calculateTicketTier(ticketTiers, basePrice) {
     const isWithin24Hours = startDate - utcNow <= 24 * 60 * 60 * 1000
     const hasNotEnded = utcNow <= endDate
     
-    console.log("Comparing dates for tier:", tier.name)
-    console.log("Start date:", startDate.toISOString())
-    console.log("End date:", endDate.toISOString())
-    console.log("Is within 24 hours of starting?", isWithin24Hours)
-    console.log("Has not ended?", hasNotEnded)
+    // console.log("Comparing dates for tier:", tier.name)
+    // console.log("Start date:", startDate.toISOString())
+    // console.log("End date:", endDate.toISOString())
+    // console.log("Is within 24 hours of starting?", isWithin24Hours)
+    // console.log("Has not ended?", hasNotEnded)
     
     return isWithin24Hours && hasNotEnded
   })
