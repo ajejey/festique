@@ -2,11 +2,19 @@ import Link from 'next/link'
 import { Menu } from 'lucide-react'
 import MobileMenu from './MobileMenu'
 
+// const navigation = [
+//   { name: 'Events', href: '/events' },
+//   { name: 'How It Works', href: '/how-it-works' },
+//   { name: 'Pricing', href: '/pricing' },
+//   { name: 'Community', href: '/community' },
+// ]
+
 const navigation = [
   { name: 'Events', href: '/events' },
-  { name: 'How It Works', href: '/how-it-works' },
-  { name: 'Pricing', href: '/pricing' },
-  { name: 'Community', href: '/community' },
+  { name: 'Organize', href: '/organize', requiredRole: ['organizer'] },
+  // { name: 'My Registrations', href: '/registrations', requiredRole: ['participant'] },
+  { name: 'About', href: '/about' },
+  { name: 'Contact', href: '/contact' }
 ]
 
 export default function Header() {
